@@ -1,0 +1,79 @@
+import { useRef } from "react";
+
+function CameraIcon() {
+  return (
+    <svg width={32} height={32} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+      <path d="m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5" />
+      <rect x={2} y={6} width={14} height={12} rx={2} />
+    </svg>
+  );
+}
+
+function FolderIcon() {
+  return (
+    <svg width={32} height={32} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" />
+    </svg>
+  );
+}
+
+function MonitorIcon() {
+  return (
+    <svg width={32} height={32} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+      <rect x={2} y={3} width={20} height={14} rx={2} />
+      <line x1={8} y1={21} x2={16} y2={21} />
+      <line x1={12} y1={17} x2={12} y2={21} />
+    </svg>
+  );
+}
+
+export default function VideoSourceModal({ onWebcam, onFile, onBlank, error }) {
+  const fileInputRef = useRef(null);
+
+  return (
+    <div className="absolute inset-0 flex flex-col items-center justify-center gap-6 bg-[#0f0f12]">
+      <div className="text-center">
+        <h1 className="text-5xl font-bold text-white tracking-tight mb-3">Gemma 4</h1>
+        <p className="text-base text-white/50">Multimodal AI · Runs entirely in your browser</p>
+      </div>
+      {error && <p className="text-sm text-white/50">{error}</p>}
+      <div className="flex gap-4 flex-wrap justify-center">
+        <button
+          onClick={() => onWebcam().catch(() => {})}
+          className="flex w-44 flex-col items-center gap-3 rounded-2xl py-6 px-4 text-white bg-white/5 border border-white/10 hover:bg-white/10 transition-colors"
+        >
+          <CameraIcon />
+          <span className="text-base font-medium">Start Webcam</span>
+        </button>
+
+        <button
+          onClick={() => fileInputRef.current?.click()}
+          className="flex w-44 flex-col items-center gap-3 rounded-2xl py-6 px-4 text-white bg-white/5 border border-white/10 hover:bg-white/10 transition-colors"
+        >
+          <FolderIcon />
+          <span className="text-base font-medium">Select Video</span>
+        </button>
+
+        <button
+          onClick={onBlank}
+          className="flex w-44 flex-col items-center gap-3 rounded-2xl py-6 px-4 text-white bg-white/5 border border-white/10 hover:bg-white/10 transition-colors"
+        >
+          <MonitorIcon />
+          <span className="text-base font-medium">No Video</span>
+        </button>
+      </div>
+      <p className="text-xs text-white/30">Everything runs locally — no data leaves your device</p>
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="video/*"
+        className="hidden"
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          if (f) onFile(f);
+          e.target.value = "";
+        }}
+      />
+    </div>
+  );
+}
