@@ -1,6 +1,6 @@
 # Gemma 4 WebGPU — React版
 
-ブラウザだけで動く Gemma 4 マルチモーダル AI チャット。サーバー不要・API キー不要。
+ブラウザだけで動く Gemma 4 E2B / E4B 対応マルチモーダル AI チャット。サーバー不要・API キー不要。
 
 **オリジナル**: https://huggingface.co/spaces/onnx-community/gemma-4-it-webgpu  
 本リポジトリはオリジナルを **React + Vite + Tailwind CSS v4** でリビルドしたもの。
