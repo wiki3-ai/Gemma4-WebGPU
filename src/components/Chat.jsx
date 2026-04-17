@@ -439,7 +439,13 @@ export default function Chat({
       {/* Header */}
       <header className="absolute inset-x-0 top-0 z-10 flex items-center justify-between px-4 py-3
         bg-gradient-to-b from-black/60 via-black/30 to-transparent">
-        <h1 className="font-semibold text-white text-sm">Gemma 4 {modelLabel}</h1>
+        <div className="flex items-center gap-3">
+          <h1 className="font-semibold text-white text-sm">Gemma 4 {modelLabel}</h1>
+          <span className="text-[10px] text-white/25">
+            Based on{" "}
+            <a href="https://huggingface.co/spaces/webml-community/Gemma-4-WebGPU" target="_blank" rel="noopener noreferrer" className="hover:text-white/50 transition-colors" title="Original HuggingFace Space">HF webml-community/Gemma-4-WebGPU</a>
+          </span>
+        </div>
         <div className="flex items-center gap-2">
           <button onClick={() => changeFontSize(-1)} className="btn-ctrl" title="Decrease font size">A-</button>
           <button onClick={() => changeFontSize(1)} className="btn-ctrl" title="Increase font size">A+</button>
