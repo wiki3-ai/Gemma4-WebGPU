@@ -12,6 +12,7 @@ import { dirname, join } from 'node:path';
 import iconv from 'iconv-lite';
 
 // .env 読み込み（依存ライブラリなし）
+// (Load .env without external dependencies)
 const __dirname = dirname(fileURLToPath(import.meta.url));
 try {
   const envFile = readFileSync(join(__dirname, '.env'), 'utf8');
@@ -19,10 +20,10 @@ try {
     const match = line.match(/^([^#=\s][^=]*)=(.*)$/);
     if (match) process.env[match[1].trim()] ??= match[2].trim();
   }
-} catch { /* .env がなければ環境変数をそのまま使用 */ }
+} catch { /* .env がなければ環境変数をそのまま使用 (if no .env, use environment variables as-is) */ }
 
 // =============================================================================
-// 設定項目 — proxy/.env で上書き可
+// 設定項目 — proxy/.env で上書き可 (Configuration — overridable via proxy/.env)
 // =============================================================================
 const PORT = parseInt(process.env.PORT || '3001');
 const MCP_SERVER_PATH = process.env.MCP_SERVER_PATH || '/Users/knishika/Desktop/works/web-search-mcp/dist/index.js';
@@ -44,6 +45,7 @@ let availableTools = null;
 
 /**
  * HTTPレスポンスのBodyを適切なエンコーディングでデコードする
+ * (Decode HTTP response body with the correct character encoding)
  */
 function decodeBody(chunks, contentType) {
   const buffer = Buffer.concat(chunks);
@@ -54,7 +56,7 @@ function decodeBody(chunks, contentType) {
 }
 
 /**
- * 天気クエリかを判定
+ * 天気クエリかを判定 (Determine whether the query is weather-related)
  */
 function isWeatherQuery(query) {
   const weatherPatterns = [
@@ -68,6 +70,7 @@ function isWeatherQuery(query) {
 
 /**
  * tenki.jpから天気情報を取得（天気クエリのフォールバック）
+ * (Fetch weather information from tenki.jp — fallback for weather queries)
  */
 function fetchWeatherFromTenki(query) {
   return new Promise((resolve, reject) => {
@@ -126,6 +129,7 @@ function fetchWeatherFromTenki(query) {
 
 /**
  * Googleから天気情報を取得（バックアップ用）
+ * (Fetch weather information from Google — backup)
  */
 function fetchGoogleWeather(targetDay) {
   return new Promise((resolve, reject) => {
@@ -161,7 +165,7 @@ function fetchGoogleWeather(targetDay) {
 }
 
 /**
- * Google天気予報HTMLをパース
+ * Google天気予報HTMLをパース (Parse Google weather forecast HTML)
  */
 function parseGoogleWeatherHtml(html) {
   return {
@@ -218,7 +222,7 @@ function handleMcpStdout(chunk) {
         }
       }
     } catch {
-      // MCPサーバーのログ行は無視
+      // MCPサーバーのログ行は無視 (Ignore MCP server log lines)
     }
   }
 }
@@ -343,10 +347,10 @@ function extractContentBody(text) {
 }
 
 /**
- * スマート検索メイン
+ * スマート検索メイン (Smart search — main entry point)
  */
 async function smartSearch(query, limit = 5) {
-  // 天気クエリはspecial handling
+  // 天気クエリはspecial handling (weather queries get special handling)
   if (isWeatherQuery(query)) {
     console.log(`[proxy] Weather query detected: "${query}"`);
     try {
@@ -358,6 +362,7 @@ async function smartSearch(query, limit = 5) {
       console.log(`[proxy:weather] Fallback: ${e.message}`);
     }
     // 天気処理が失败したら通常の検索にfallback
+    // (If weather handling fails, fall back to normal search)
     console.log('[proxy] Falling back to normal search');
   }
 
@@ -388,7 +393,7 @@ async function smartSearch(query, limit = 5) {
 
   console.log(`[proxy] Stage 1: got ${summaries.length} summaries`);
 
-  // Stage 2: スコアリング
+  // Stage 2: スコアリング (scoring)
   const queryTokens = extractQueryTokens(query);
   const scored = summaries.map((s) => ({
     ...s,
@@ -402,7 +407,7 @@ async function smartSearch(query, limit = 5) {
 
   console.log(`[proxy] Stage 2: top ${topUrls.length} URLs selected`);
 
-  // Stage 3: コンテンツ抽出
+  // Stage 3: コンテンツ抽出 (content extraction)
   const results = [];
   for (const item of topUrls) {
     try {
@@ -438,16 +443,17 @@ async function smartSearch(query, limit = 5) {
 }
 
 /**
- * 天気クエリの专用handle
+ * 天気クエリの专用handle (Dedicated handler for weather queries)
  */
 async function handleWeatherQuery(query) {
   // まずGoogle Weatherの结构化JSON试试
+  // (First, try Google Weather structured JSON)
   const weatherData = await fetchGoogleWeatherStructured(query);
   if (weatherData) {
     return [weatherData];
   }
   
-  // fallback: tenki.jpを試す
+  // fallback: tenki.jpを試す (try tenki.jp as fallback)
   try {
     const weather = await fetchWeatherFromTenki(query);
     if (weather) return [weather];
@@ -460,11 +466,12 @@ async function handleWeatherQuery(query) {
 
 /**
  * Google Weather的结构化データを取得
+ * (Fetch structured weather data from Google Weather)
  */
 function fetchGoogleWeatherStructured(query) {
   return new Promise((resolve, reject) => {
-    // 日本の天気情報を直接取得できるURL
-    // Googleの天气API endpoint
+    // 日本の天気情報を直接取得できるURL (URL to directly fetch Japanese weather info)
+    // Googleの天气API endpoint (Google Weather API endpoint)
     const locations = {
       '東京': 'tokyo',
       '大阪': 'osaka', 
@@ -485,7 +492,7 @@ function fetchGoogleWeatherStructured(query) {
     
     if (!locationCode) locationCode = 'tokyo';
     
-    // tenki.jpの直接リンクを生成
+    // tenki.jpの直接リンクを生成 (generate direct links to tenki.jp)
     const tenkiLinks = {
       tokyo: 'https://tenki.jp/forecast/3-16-4410.html',
       osaka: 'https://tenki.jp/forecast/3-27-6200.html',
@@ -498,7 +505,7 @@ function fetchGoogleWeatherStructured(query) {
     
     const targetUrl = tenkiLinks[locationCode];
     
-    // 直接コンテンツを取得
+    // 直接コンテンツを取得 (fetch content directly)
     const req = httpsRequest(targetUrl, {
       method: 'GET',
       headers: {
@@ -525,10 +532,10 @@ function fetchGoogleWeatherStructured(query) {
 }
 
 /**
- * tenki.jpの予報ページをパース
+ * tenki.jpの予報ページをパース (Parse tenki.jp forecast page)
  */
 function parseTenkiForecast(html, location) {
-  // 地域の名称
+  // 地域の名称 (region names)
   const locationNames = {
     tokyo: '東京',
     osaka: '大阪',
@@ -540,16 +547,19 @@ function parseTenkiForecast(html, location) {
   };
 
   // HTMLからデータを抽出するための正規表現
+  // (Regular expressions for extracting data from HTML)
   // tenki.jpの構造変更に備え、可能な限り汎用的なパターンを使用
+  // (Use patterns as generic as possible, in case tenki.jp changes its structure)
   
-  // 1. 天気 (例: 晴れ, 曇り)
+  // 1. 天気 (weather) (例/e.g.: 晴れ, 曇り)
   // <p class="weather">晴れ</p のような形式を想定
+  // (Expects a format like <p class="weather">Sunny</p>)
   const weatherRe = /<p[^>]*class="weather"[^>]*>([^<]+)<\/p>/i;
   const weatherMatch = html.match(weatherRe);
   const weather = weatherMatch ? weatherMatch[1].trim() : '';
 
-  // 2. 気温 (最高・最低)
-  // 例: <td>25℃</td>
+  // 2. 気温（最高・最低）(temperature — high/low)
+  // 例/e.g.: <td>25℃</td>
   const tempRe = /<td>(\d+)℃<\/td>/g;
   const temps = [];
   let tempMatch;
@@ -557,8 +567,9 @@ function parseTenkiForecast(html, location) {
     temps.push(tempMatch[1]);
   }
 
-  // 3. 降水確率 (例: 10%)
+  // 3. 降水確率 (precipitation probability) (例/e.g.: 10%)
   // <span class="precipitation">10%</span> などの形式を想定
+  // (Expects a format like <span class="precipitation">10%</span>)
   const rainRe = /(\d+)%/g;
   const rains = [];
   let rainMatch;
@@ -608,7 +619,7 @@ async function fallbackFullSearch(query, limit) {
   return { query, results: results.slice(0, limit) };
 }
 
-// ─── HTTP サーバー ────────────────────────────────────────────────────────────
+// ─── HTTP サーバー (HTTP Server) ────────────────────────────────────────────────────────────
 
 const server = createServer(async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');

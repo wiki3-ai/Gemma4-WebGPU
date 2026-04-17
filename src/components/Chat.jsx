@@ -10,7 +10,7 @@ import SystemPromptModal from "./SystemPromptModal";
 
 const FONT_SIZES = ["text-xs", "text-sm", "text-base", "text-lg", "text-xl", "text-2xl"];
 
-// Mermaid: 動的インポート + 初期化フラグ
+// Mermaid: 動的インポート + 初期化フラグ (dynamic import + initialization flag)
 let mermaidInitialized = false;
 let mermaidCounter = 0;
 
@@ -33,6 +33,7 @@ function MermaidBlock({ code }) {
     setSvg(null);
     setError(null);
     // ストリーミング中に何度も呼ばれないよう300msデバウンス
+    // (300ms debounce to avoid repeated calls during streaming)
     const timer = setTimeout(async () => {
       try {
         const mermaid = await getMermaid();
@@ -73,11 +74,11 @@ function CodeBlock({ className, children }) {
     if (lang && hljs.getLanguage(lang)) {
       return hljs.highlight(code, { language: lang }).value;
     }
-    // 言語不明の場合は自動判定
+    // 言語不明の場合は自動判定 (auto-detect when language is unknown)
     return hljs.highlightAuto(code).value;
   }, [code, isMermaid, lang]);
 
-  // Mermaid は専用コンポーネントで描画
+  // Mermaid は専用コンポーネントで描画 (render Mermaid with a dedicated component)
   if (isMermaid) return <MermaidBlock code={code} />;
 
   function copy() {
@@ -127,7 +128,7 @@ const MD_COMPONENTS = {
     return <code className="bg-white/10 px-1.5 py-0.5 rounded text-[0.9em] font-mono" {...props}>{children}</code>;
   },
   pre({ children }) {
-    // pre は CodeBlock 内で処理済みなのでそのまま返す
+    // pre は CodeBlock 内で処理済みなのでそのまま返す (already handled inside CodeBlock, pass through)
     return <>{children}</>;
   },
 };
@@ -167,7 +168,7 @@ function ThinkBlock({ text }) {
           <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5" />
           <path d="M9 18h6M10 22h4" />
         </svg>
-        {open ? "思考を隠す" : "思考を表示"}
+        {open ? "思考を隠す (Hide thinking)" : "思考を表示 (Show thinking)"}
         <svg width={11} height={11} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}
           style={{ transform: open ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s" }}>
           <polyline points="6 9 12 15 18 9" />
@@ -182,13 +183,15 @@ function ThinkBlock({ text }) {
   );
 }
 
-// Gemma 4 の特殊トークンパターン
+// Gemma 4 の特殊トークンパターン (Gemma 4 special-token patterns)
 // 思考: [内容]<channel|>  回答: [内容]<turn|>
+// (Thinking: [content]<channel|>  Answer: [content]<turn|>)
 const SPECIAL_TOKEN_RE = /<\|[^>]*\|?>|<[^>|]*\|>/g;
 
 function parseGemmaResponse(raw) {
   const text = raw || "";
   // <channel|> で分割: 前半=思考、後半=回答
+  // (Split on <channel|>: first half = thinking, second half = answer)
   const channelIdx = text.indexOf("<channel|>");
   if (channelIdx !== -1) {
     const thinkRaw = text.slice(0, channelIdx).replace(SPECIAL_TOKEN_RE, "").trim();
@@ -196,6 +199,7 @@ function parseGemmaResponse(raw) {
     return { thinkText: thinkRaw, mainText: answerRaw };
   }
   // <channel|> なし（thinking OFF）: 特殊トークンを除去して本文のみ
+  // (No <channel|> (thinking OFF): strip special tokens and return body only)
   return { thinkText: null, mainText: text.replace(SPECIAL_TOKEN_RE, "").trim() };
 }
 
@@ -204,6 +208,7 @@ function AssistantContent({ response, generating }) {
   const hasChannel = text.includes("<channel|>");
 
   // 生成中かつ <channel|> 未到達 = まだ思考フェーズ
+  // (Generating but <channel|> not reached yet = still in thinking phase)
   if (generating && !hasChannel) {
     return (
       <span className="flex items-center gap-1.5 text-xs text-white/30">
@@ -213,12 +218,13 @@ function AssistantContent({ response, generating }) {
               style={{ animationDelay: `${i * 0.15}s` }} />
           ))}
         </span>
-        思考中…
+        思考中… (Thinking…)
       </span>
     );
   }
 
   // 生成完了、または <channel|> 到達済み
+  // (Generation complete, or <channel|> already reached)
   const { thinkText, mainText } = parseGemmaResponse(text);
 
   return (
@@ -230,6 +236,7 @@ function AssistantContent({ response, generating }) {
         </div>
       ) : generating ? (
         // <channel|> 到達後、回答がまだ来ていない場合
+        // (After <channel|>, but the answer hasn't arrived yet)
         <span className="inline-flex gap-1">
           {[0,1,2].map(i => (
             <span key={i} className="w-1.5 h-1.5 bg-white/40 rounded-full animate-bounce"
@@ -270,7 +277,7 @@ function MessageBubble({ msg, fontSize }) {
                       style={{ animationDelay: `${i * 0.15}s` }} />
                   ))}
                 </span>
-                書き起こし中…
+                書き起こし中… (Transcribing…)
               </span>
             ) : (
               <p className="whitespace-pre-wrap">{msg.text}</p>
@@ -473,7 +480,7 @@ export default function Chat({
             <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="animate-spin">
               <circle cx={12} cy={12} r={10} strokeDasharray="32" strokeDashoffset="10" />
             </svg>
-            検索中...
+            検索中... (Searching...)
           </span>
         </div>
       )}
@@ -542,7 +549,7 @@ export default function Chat({
           </svg>
         </button>
 
-        {/* Web search toggle — プロキシ起動時のみ表示 */}
+        {/* Web search toggle — プロキシ起動時のみ表示 (shown only when proxy is running) */}
         {searchAvailable && (
           <button
             onClick={() => onWebSearchChange?.(!webSearch)}

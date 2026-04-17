@@ -1,3 +1,5 @@
+**[English version (README.en.md)](./README.en.md)**
+
 # Gemma 4 WebGPU — React版
 
 ブラウザだけで動く Gemma 4 E2B / E4B 対応マルチモーダル AI チャット。サーバー不要・API キー不要。
