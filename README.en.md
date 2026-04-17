@@ -75,3 +75,28 @@ Note:
 - react-markdown + remark-gfm — Markdown rendering
 - Mermaid — In-chat diagram rendering
 - Web Workers — Non-blocking UI inference
+
+## Cloudflare Workers Deployment
+
+Pushes to the `main` branch are automatically deployed to [gemma4.wiki3.cc](https://gemma4.wiki3.cc) via GitHub Actions + Wrangler.
+
+### Required Secrets (GitHub → Settings → Secrets and variables → Actions)
+
+| Secret | Description |
+|---|---|
+| `CLOUDFLARE_API_TOKEN` | API token for Workers deployment (Workers Scripts: Edit permission) |
+| `CLOUDFLARE_ACCOUNT_ID` | Cloudflare account ID |
+
+### Custom Domain Setup
+
+1. The `wiki3.cc` DNS zone must be added in Cloudflare Dashboard
+2. `wrangler deploy` will automatically configure the `gemma4.wiki3.cc` custom domain
+3. After the first deployment, verify the domain under Workers → gemma4-webgpu → Triggers in the dashboard
+
+### Manual Deployment
+
+```bash
+npm ci
+npm run build
+npx wrangler deploy          # CLOUDFLARE_API_TOKEN must be set as an env var
+```
