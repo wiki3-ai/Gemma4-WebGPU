@@ -89,7 +89,7 @@ export default function VideoSourceModal({ onWebcam, onFile, onBlank, error }) {
             <span className="text-base font-medium">No Video</span>
           </button>
         </div>
-        <p className="text-xs text-white/30">Everything runs locally — no data leaves your device (* if you enable the search tool it will use cloud search service)</p>
+        <p className="text-xs text-white/30">Everything runs locally — no data leaves your device<br />(* if you enable the search tool it will use cloud search service)</p>
         <input
           ref={fileInputRef}
           type="file"
