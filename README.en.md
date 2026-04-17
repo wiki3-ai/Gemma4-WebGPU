@@ -2,10 +2,10 @@
 
 A multimodal AI chat powered by Gemma 4 E2B / E4B that runs entirely in the browser. No server required. No API key required.
 
-**Original**: https://huggingface.co/spaces/onnx-community/gemma-4-it-webgpu  
+**Original**: https://huggingface.co/spaces/webml-community/Gemma-4-WebGPU ([source](https://huggingface.co/spaces/webml-community/Gemma-4-WebGPU/tree/main))  
 This repository is a rebuild of the original using **React + Vite + Tailwind CSS v4**.
 
-**Demo**: [https://dev.iwh12.jp/Gemma4-WebGPU/](https://dev.iwh12.jp/Gemma4-WebGPU/)
+**Demo**: [https://gemma4.wiki3.cc](https://gemma4.wiki3.cc)
 
 ---
 

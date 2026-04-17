@@ -333,6 +333,7 @@ export default function Chat({
   );
   const [showSysModal, setShowSysModal] = useState(false);
   const [crashed, setCrashed] = useState(false);
+  const [searchDismissed, setSearchDismissed] = useState(false);
 
   const inputRef = useRef(null);
   const chatRef = useRef(null);
@@ -440,8 +441,8 @@ export default function Chat({
         bg-gradient-to-b from-black/60 via-black/30 to-transparent">
         <h1 className="font-semibold text-white text-sm">Gemma 4 {modelLabel}</h1>
         <div className="flex items-center gap-2">
-          <button onClick={() => changeFontSize(-1)} className="btn-ctrl">A-</button>
-          <button onClick={() => changeFontSize(1)} className="btn-ctrl">A+</button>
+          <button onClick={() => changeFontSize(-1)} className="btn-ctrl" title="Decrease font size">A-</button>
+          <button onClick={() => changeFontSize(1)} className="btn-ctrl" title="Increase font size">A+</button>
           {onMaxNewTokensChange && (
             <input
               type="number"
@@ -453,9 +454,9 @@ export default function Chat({
               title="Max new tokens (64–4096)"
             />
           )}
-          <button onClick={() => setShowSysModal(true)} className="btn-ctrl">⚙</button>
-          <button onClick={onToggleBg} className={`btn-ctrl ${bgVisible ? "text-white/60" : "text-white/20"}`}>BG</button>
-          <button onClick={onReset} className="btn-ctrl">
+          <button onClick={() => setShowSysModal(true)} className="btn-ctrl" title="System prompt settings">⚙</button>
+          <button onClick={onToggleBg} className={`btn-ctrl ${bgVisible ? "text-white/60" : "text-white/20"}`} title={bgVisible ? "Hide video background" : "Show video background"}>BG</button>
+          <button onClick={onReset} className="btn-ctrl" title="Clear chat history">
             <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
               <polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14H6L5 6" /><path d="M10 11v6M14 11v6" />
             </svg>
@@ -508,6 +509,7 @@ export default function Chat({
         {/* Mic / Stop-recording button — leftmost, matches original layout */}
         <button onClick={handleMicClick}
           disabled={isTranscribing}
+          title={isRecording ? "Stop recording" : isTranscribing ? "Transcribing audio…" : "Record voice input"}
           className={`shrink-0 w-10 h-10 flex items-center justify-center rounded-2xl transition-colors ${
             isRecording
               ? "bg-red-500 text-white shadow-lg shadow-red-500/30"
@@ -527,6 +529,7 @@ export default function Chat({
 
         {/* Camera = scan (capture frame from video) */}
         <button onClick={handleScan}
+          title="Capture a frame from the video feed and send it to the AI"
           className="shrink-0 w-9 h-9 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white/60 hover:text-white transition-colors">
           <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
             <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3z" />
@@ -549,22 +552,41 @@ export default function Chat({
           </svg>
         </button>
 
-        {/* Web search toggle — プロキシ起動時のみ表示 (shown only when proxy is running) */}
-        {searchAvailable && (
-          <button
-            onClick={() => onWebSearchChange?.(!webSearch)}
-            title={webSearch ? "Web Search ON" : "Web Search OFF"}
-            className={`shrink-0 w-9 h-9 flex items-center justify-center rounded-full transition-colors ${
-              webSearch
-                ? "bg-blue-500/20 text-blue-300 hover:bg-blue-500/30"
-                : "bg-white/10 text-white/30 hover:bg-white/20 hover:text-white/60"
-            }`}>
-            <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-              <circle cx={11} cy={11} r={8} />
-              <path d="m21 21-4.35-4.35" />
-            </svg>
-          </button>
-        )}
+        {/* Web search toggle — always visible; struck out when proxy is unavailable */}
+        <button
+          onClick={() => {
+            if (searchAvailable) {
+              onWebSearchChange?.(!webSearch);
+            } else if (!searchDismissed) {
+              alert("Web search is unavailable. The search proxy server is not running. See proxy/README.md for setup instructions.");
+              setSearchDismissed(true);
+            }
+          }}
+          title={searchAvailable
+            ? (webSearch ? "Web Search ON — click to disable" : "Web Search OFF — click to enable")
+            : (searchDismissed
+              ? "Web search unavailable — proxy not running"
+              : "Web search — click for details"
+            )
+          }
+          className={`shrink-0 w-9 h-9 flex items-center justify-center rounded-full transition-colors ${
+            searchDismissed && !searchAvailable
+              ? "bg-white/5 text-white/15 cursor-default"
+              : webSearch
+              ? "bg-blue-500/20 text-blue-300 hover:bg-blue-500/30"
+              : searchAvailable
+              ? "bg-white/10 text-white/30 hover:bg-white/20 hover:text-white/60"
+              : "bg-white/10 text-white/30 hover:bg-white/20 hover:text-white/60"
+          }`}>
+          <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}
+            className={searchDismissed && !searchAvailable ? "opacity-40" : ""}>
+            <circle cx={11} cy={11} r={8} />
+            <path d="m21 21-4.35-4.35" />
+            {searchDismissed && !searchAvailable && (
+              <line x1={4} y1={4} x2={20} y2={20} strokeWidth={2.5} className="text-red-400" stroke="currentColor" />
+            )}
+          </svg>
+        </button>
 
         <div className="flex-1 bg-white/5 border border-white/10 rounded-2xl px-3 py-2">
           <textarea
@@ -584,6 +606,7 @@ export default function Chat({
         <button
           onClick={isGenerating ? onInterrupt : handleSend}
           disabled={!isGenerating && !input.trim() && !dropImg}
+          title={isGenerating ? "Stop generation" : "Send message"}
           className={`shrink-0 w-9 h-9 flex items-center justify-center rounded-full transition-colors ${
             isGenerating
               ? "bg-red-500/20 text-red-400 hover:bg-red-500/30"
