@@ -361,7 +361,7 @@ async function smartSearch(query, limit = 5) {
     } catch (e) {
       console.log(`[proxy:weather] Fallback: ${e.message}`);
     }
-    // 天気処理が失败したら通常の検索にfallback
+    // 天気処理が失敗したら通常の検索にfallback
     // (If weather handling fails, fall back to normal search)
     console.log('[proxy] Falling back to normal search');
   }
@@ -443,10 +443,10 @@ async function smartSearch(query, limit = 5) {
 }
 
 /**
- * 天気クエリの专用handle (Dedicated handler for weather queries)
+ * 天気クエリの専用ハンドラ (Dedicated handler for weather queries)
  */
 async function handleWeatherQuery(query) {
-  // まずGoogle Weatherの结构化JSON试试
+  // まずGoogle Weatherの構造化JSONを試す
   // (First, try Google Weather structured JSON)
   const weatherData = await fetchGoogleWeatherStructured(query);
   if (weatherData) {
@@ -465,13 +465,13 @@ async function handleWeatherQuery(query) {
 }
 
 /**
- * Google Weather的结构化データを取得
+ * Google Weatherの構造化データを取得
  * (Fetch structured weather data from Google Weather)
  */
 function fetchGoogleWeatherStructured(query) {
   return new Promise((resolve, reject) => {
     // 日本の天気情報を直接取得できるURL (URL to directly fetch Japanese weather info)
-    // Googleの天气API endpoint (Google Weather API endpoint)
+    // Googleの天気API endpoint (Google Weather API endpoint)
     const locations = {
       '東京': 'tokyo',
       '大阪': 'osaka', 
