@@ -32,18 +32,28 @@ export default function VideoSourceModal({ onWebcam, onFile, onBlank, error }) {
 
   return (
     <div className="absolute inset-0 flex flex-col bg-[#0f0f12]">
-      {/* Site header */}
-      <header className="flex items-center justify-between px-4 py-2 text-xs text-white/40 border-b border-white/5">
-        <div className="flex items-center gap-3">
-          <a href="https://gemma4.wiki3.cc" className="text-white hover:text-white/70 transition-colors" title="Gemma 4 WebGPU live site">gemma4.wiki3.cc</a>
-          <a href="https://github.com/wiki3-ai/Gemma4-WebGPU" target="_blank" rel="noopener noreferrer" className="hover:text-white/70 transition-colors" title="Source code on GitHub">github.com/wiki3-ai/Gemma4-WebGPU</a>
+      {/* Project info banner — top ~25% of screen */}
+      <section className="h-[25vh] shrink-0 flex items-center justify-between px-8 border-b border-white/10">
+        <div className="flex flex-col justify-center gap-3">
+          <div className="flex items-center gap-4 flex-wrap text-[clamp(1rem,2.2vw,1.75rem)] text-white/70">
+            <a href="https://gemma4.wiki3.cc" className="text-white hover:text-white/80 transition-colors font-medium" title="Gemma 4 WebGPU live site">gemma4.wiki3.cc</a>
+            <span className="text-white/20">·</span>
+            <a href="https://github.com/wiki3-ai/Gemma4-WebGPU" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors" title="Source code on GitHub">github.com/wiki3-ai/Gemma4-WebGPU</a>
+          </div>
+          <div className="text-[clamp(0.7rem,1.4vw,1.1rem)] text-white/40">
+            Based on{" "}
+            <a href="https://huggingface.co/spaces/webml-community/Gemma-4-WebGPU" target="_blank" rel="noopener noreferrer" className="hover:text-white/60 transition-colors" title="Original HuggingFace Space">HF webml-community/Gemma-4-WebGPU</a>
+          </div>
+          <div className="flex items-center gap-4 flex-wrap text-[clamp(0.85rem,1.6vw,1.25rem)] text-white/50">
+            <a href="https://wiki3.ai/" target="_blank" rel="noopener noreferrer" className="hover:text-white/80 transition-colors" title="wiki3.ai">wiki3.ai</a>
+            <a href="https://www.linkedin.com/in/jamespaulwhite" target="_blank" rel="noopener noreferrer" className="hover:text-white/80 transition-colors" title="James Paul White on LinkedIn">in/jamespaulwhite</a>
+            <a href="mailto:jim@wiki3.ai" className="hover:text-white/80 transition-colors" title="Email jim@wiki3.ai">jim@wiki3.ai</a>
+          </div>
         </div>
-        <div className="flex items-center gap-3">
-          <a href="https://wiki3.ai/" target="_blank" rel="noopener noreferrer" className="hover:text-white/70 transition-colors" title="wiki3.ai">wiki3.ai</a>
-          <a href="https://www.linkedin.com/in/jamespaulwhite" target="_blank" rel="noopener noreferrer" className="hover:text-white/70 transition-colors" title="James Paul White on LinkedIn">in/jamespaulwhite</a>
-          <a href="mailto:jim@wiki3.ai" className="hover:text-white/70 transition-colors" title="Email jim@wiki3.ai">jim@wiki3.ai</a>
-        </div>
-      </header>
+        <a href="https://gemma4.wiki3.cc" title="gemma4.wiki3.cc" className="shrink-0 h-[calc(25vh-2rem)] ml-6">
+          <img src="/qr-gemma4.png" alt="QR code for gemma4.wiki3.cc" className="h-full w-auto rounded-lg" />
+        </a>
+      </section>
 
       <div className="flex-1 flex flex-col items-center justify-center gap-6 px-6">
         <div className="text-center">
