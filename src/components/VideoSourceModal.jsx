@@ -31,49 +31,71 @@ export default function VideoSourceModal({ onWebcam, onFile, onBlank, error }) {
   const fileInputRef = useRef(null);
 
   return (
-    <div className="absolute inset-0 flex flex-col items-center justify-center gap-6 bg-[#0f0f12]">
-      <div className="text-center">
-        <h1 className="text-5xl font-bold text-white tracking-tight mb-3">Gemma 4</h1>
-        <p className="text-base text-white/50">Multimodal AI · Runs entirely in your browser</p>
-      </div>
-      {error && <p className="text-sm text-white/50">{error}</p>}
-      <div className="flex gap-4 flex-wrap justify-center">
-        <button
-          onClick={() => onWebcam().catch(() => {})}
-          className="flex w-44 flex-col items-center gap-3 rounded-2xl py-6 px-4 text-white bg-white/5 border border-white/10 hover:bg-white/10 transition-colors"
-        >
-          <CameraIcon />
-          <span className="text-base font-medium">Start Webcam</span>
-        </button>
+    <div className="absolute inset-0 flex flex-col bg-[#0f0f12]">
+      {/* Site header */}
+      <header className="flex items-center justify-between px-4 py-2 text-xs text-white/40 border-b border-white/5">
+        <div className="flex items-center gap-3">
+          <a href="https://gemma4.wiki3.cc" className="hover:text-white/70 transition-colors" title="Gemma 4 WebGPU live site">gemma4.wiki3.cc</a>
+          <a href="https://github.com/wiki3-ai/Gemma4-WebGPU" target="_blank" rel="noopener noreferrer" className="hover:text-white/70 transition-colors" title="Source code on GitHub">GitHub</a>
+        </div>
+        <div className="text-[10px] text-white/25">
+          Based on{" "}
+          <a href="https://huggingface.co/spaces/webml-community/Gemma-4-WebGPU" target="_blank" rel="noopener noreferrer" className="hover:text-white/50 transition-colors" title="Original HuggingFace Space">HF webml-community/Gemma-4-WebGPU</a>
+        </div>
+        <div className="flex items-center gap-3">
+          <a href="https://wiki3.ai/" target="_blank" rel="noopener noreferrer" className="hover:text-white/70 transition-colors" title="wiki3.ai">wiki3.ai</a>
+          <a href="https://www.linkedin.com/in/jamespaulwhite" target="_blank" rel="noopener noreferrer" className="hover:text-white/70 transition-colors" title="James Paul White on LinkedIn">in/jamespaulwhite</a>
+          <a href="mailto:jim@wiki3.ai" className="hover:text-white/70 transition-colors" title="Email jim@wiki3.ai">jim@wiki3.ai</a>
+        </div>
+      </header>
 
-        <button
-          onClick={() => fileInputRef.current?.click()}
-          className="flex w-44 flex-col items-center gap-3 rounded-2xl py-6 px-4 text-white bg-white/5 border border-white/10 hover:bg-white/10 transition-colors"
-        >
-          <FolderIcon />
-          <span className="text-base font-medium">Select Video</span>
-        </button>
+      <div className="flex-1 flex flex-col items-center justify-center gap-6 px-6">
+        <div className="text-center">
+          <h1 className="text-5xl font-bold text-white tracking-tight mb-3">Gemma 4</h1>
+          <p className="text-base text-white/50">Multimodal AI · Runs entirely in your browser</p>
+        </div>
+        {error && <p className="text-sm text-white/50">{error}</p>}
+        <div className="flex gap-4 flex-wrap justify-center">
+          <button
+            onClick={() => onWebcam().catch(() => {})}
+            title="Use your webcam as video input for multimodal AI"
+            className="flex w-44 flex-col items-center gap-3 rounded-2xl py-6 px-4 text-white bg-white/5 border border-white/10 hover:bg-white/10 transition-colors"
+          >
+            <CameraIcon />
+            <span className="text-base font-medium">Start Webcam</span>
+          </button>
 
-        <button
-          onClick={onBlank}
-          className="flex w-44 flex-col items-center gap-3 rounded-2xl py-6 px-4 text-white bg-white/5 border border-white/10 hover:bg-white/10 transition-colors"
-        >
-          <MonitorIcon />
-          <span className="text-base font-medium">No Video</span>
-        </button>
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            title="Choose a video file from your device"
+            className="flex w-44 flex-col items-center gap-3 rounded-2xl py-6 px-4 text-white bg-white/5 border border-white/10 hover:bg-white/10 transition-colors"
+          >
+            <FolderIcon />
+            <span className="text-base font-medium">Select Video</span>
+          </button>
+
+          <button
+            onClick={onBlank}
+            title="Continue without video — text and image chat only"
+            className="flex w-44 flex-col items-center gap-3 rounded-2xl py-6 px-4 text-white bg-white/5 border border-white/10 hover:bg-white/10 transition-colors"
+          >
+            <MonitorIcon />
+            <span className="text-base font-medium">No Video</span>
+          </button>
+        </div>
+        <p className="text-xs text-white/30">Everything runs locally — no data leaves your device</p>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="video/*"
+          className="hidden"
+          onChange={(e) => {
+            const f = e.target.files?.[0];
+            if (f) onFile(f);
+            e.target.value = "";
+          }}
+        />
       </div>
-      <p className="text-xs text-white/30">Everything runs locally — no data leaves your device</p>
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="video/*"
-        className="hidden"
-        onChange={(e) => {
-          const f = e.target.files?.[0];
-          if (f) onFile(f);
-          e.target.value = "";
-        }}
-      />
     </div>
   );
 }

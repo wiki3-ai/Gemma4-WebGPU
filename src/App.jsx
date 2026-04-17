@@ -74,6 +74,7 @@ function LandingScreen({ modelId, setModelId, onStart, onBack, onClearCache, web
       <div className="flex gap-2 w-full max-w-xs">
         <button
           onClick={onBack}
+          title="Go back to video source selection"
           className="flex-1 py-2.5 rounded-xl bg-white/5 border border-white/10 text-sm text-white/50 hover:bg-white/10 transition-colors"
         >
           ← Back
@@ -81,6 +82,7 @@ function LandingScreen({ modelId, setModelId, onStart, onBack, onClearCache, web
         <button
           onClick={onStart}
           disabled={!webgpuOk}
+          title={webgpuOk ? "Download and load the selected model" : "WebGPU is not supported in this browser"}
           className="flex-[2] py-2.5 rounded-xl bg-blue-500/20 border border-blue-400/30 text-sm text-blue-300 hover:bg-blue-500/30 disabled:opacity-30 disabled:cursor-default transition-colors font-medium"
         >
           Load Model
@@ -89,6 +91,7 @@ function LandingScreen({ modelId, setModelId, onStart, onBack, onClearCache, web
 
       <button
         onClick={onClearCache}
+        title="Delete all cached model weights from the browser"
         className="text-xs text-white/20 hover:text-white/50 transition-colors"
       >
         Clear model cache

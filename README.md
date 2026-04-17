@@ -4,10 +4,10 @@
 
 ブラウザだけで動く Gemma 4 E2B / E4B 対応マルチモーダル AI チャット。サーバー不要・API キー不要。
 
-**オリジナル**: https://huggingface.co/spaces/onnx-community/gemma-4-it-webgpu  
+**オリジナル**: https://huggingface.co/spaces/webml-community/Gemma-4-WebGPU ([ソース](https://huggingface.co/spaces/webml-community/Gemma-4-WebGPU/tree/main))  
 本リポジトリはオリジナルを **React + Vite + Tailwind CSS v4** でリビルドしたもの。
 
-**デモサイト**: [https://dev.iwh12.jp/Gemma4-WebGPU/](https://dev.iwh12.jp/Gemma4-WebGPU/)
+**デモサイト**: [https://gemma4.wiki3.cc](https://gemma4.wiki3.cc)
 
 ---
 
