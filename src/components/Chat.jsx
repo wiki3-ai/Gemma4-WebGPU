@@ -9,6 +9,7 @@ import "highlight.js/styles/atom-one-dark.css";
 import SystemPromptModal from "./SystemPromptModal";
 
 const FONT_SIZES = ["text-xs", "text-sm", "text-base", "text-lg", "text-xl", "text-2xl"];
+const DEFAULT_HEADER_HEIGHT = 88;
 
 // Mermaid: 動的インポート + 初期化フラグ (dynamic import + initialization flag)
 let mermaidInitialized = false;
@@ -334,7 +335,9 @@ export default function Chat({
   const [showSysModal, setShowSysModal] = useState(false);
   const [crashed, setCrashed] = useState(false);
   const [searchDismissed, setSearchDismissed] = useState(false);
+  const [headerHeight, setHeaderHeight] = useState(0);
 
+  const headerRef = useRef(null);
   const inputRef = useRef(null);
   const chatRef = useRef(null);
   const isComposing = useRef(false);
@@ -348,6 +351,20 @@ export default function Chat({
       chatRef.current.scrollTop = chatRef.current.scrollHeight;
     }
   }, [messages]);
+
+  useEffect(() => {
+    if (!headerRef.current) return;
+    const updateHeaderHeight = () => setHeaderHeight(headerRef.current?.offsetHeight || 0);
+    updateHeaderHeight();
+
+    const observer = new ResizeObserver(updateHeaderHeight);
+    observer.observe(headerRef.current);
+    window.addEventListener("resize", updateHeaderHeight);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", updateHeaderHeight);
+    };
+  }, []);
 
   // Resize textarea
   useEffect(() => {
@@ -437,12 +454,11 @@ export default function Chat({
       onDrop={handleDrop}
     >
       {/* Header */}
-      <header className="absolute inset-x-0 top-0 z-10 px-4 py-2
-        bg-gradient-to-b from-black/60 via-black/30 to-transparent">
+      <header ref={headerRef} className="absolute inset-x-0 top-0 z-10 px-4 py-2 bg-gradient-to-b from-black/80 via-black/55 to-transparent backdrop-blur-sm">
         <div className="flex items-center justify-between gap-3 text-xs text-white/40 flex-wrap">
           <div className="flex items-center gap-3">
             <a href="https://gemma4.wiki3.cc" className="hover:text-white/70 transition-colors" title="Gemma 4 WebGPU live site">gemma4.wiki3.cc</a>
-            <a href="https://github.com/wiki3-ai/Gemma4-WebGPU" target="_blank" rel="noopener noreferrer" className="hover:text-white/70 transition-colors" title="Source code on GitHub">GitHub</a>
+            <a href="https://github.com/wiki3-ai/Gemma4-WebGPU" target="_blank" rel="noopener noreferrer" className="hover:text-white/70 transition-colors" title="Source code on GitHub">github.com/wiki3-ai/Gemma4-WebGPU</a>
           </div>
           <div className="text-[10px] text-white/25">
             Based on{" "}
@@ -483,7 +499,7 @@ export default function Chat({
 
       {/* Recording indicator */}
       {isRecording && (
-        <div className="absolute top-24 inset-x-0 z-10 flex justify-center">
+        <div className="absolute inset-x-0 z-10 flex justify-center" style={{ top: `${(headerHeight || DEFAULT_HEADER_HEIGHT) + 8}px` }}>
           <span className="flex items-center gap-1.5 text-xs text-red-400 bg-black/40 rounded-full px-3 py-1">
             <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
             Recording...
@@ -493,7 +509,7 @@ export default function Chat({
 
       {/* Searching indicator */}
       {isSearching && (
-        <div className="absolute top-24 inset-x-0 z-10 flex justify-center">
+        <div className="absolute inset-x-0 z-10 flex justify-center" style={{ top: `${(headerHeight || DEFAULT_HEADER_HEIGHT) + 8}px` }}>
           <span className="flex items-center gap-1.5 text-xs text-blue-400 bg-black/40 rounded-full px-3 py-1">
             <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="animate-spin">
               <circle cx={12} cy={12} r={10} strokeDasharray="32" strokeDashoffset="10" />
@@ -504,7 +520,7 @@ export default function Chat({
       )}
 
       {/* Messages */}
-      <div ref={chatRef} className={`flex-1 overflow-y-auto px-4 pt-24 pb-4 space-y-4 ${fontSize}`}>
+      <div ref={chatRef} className={`flex-1 overflow-y-auto px-4 pb-4 space-y-4 ${fontSize}`} style={{ paddingTop: `${(headerHeight || DEFAULT_HEADER_HEIGHT) + 16}px` }}>
         {messages.map((msg, i) => (
           <MessageBubble key={i} msg={msg} fontSize={fontSize} />
         ))}
