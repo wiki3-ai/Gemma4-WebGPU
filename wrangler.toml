@@ -1,0 +1,21 @@
+# Cloudflare Workers with Static Assets configuration
+# Deploys the Vite-built SPA to gemma4.wiki3.cc
+#
+# Required secrets (set in GitHub → Settings → Secrets):
+#   CLOUDFLARE_API_TOKEN   – Workers deploy token
+#   CLOUDFLARE_ACCOUNT_ID  – Cloudflare account ID
+
+name = "gemma4-webgpu"
+compatibility_date = "2025-04-01"
+
+# Custom domain – requires DNS zone for wiki3.cc in the same account
+routes = [
+  { pattern = "gemma4.wiki3.cc", custom_domain = true }
+]
+
+# Serve the Vite production build as static assets
+[assets]
+directory = "./dist"
+
+# Return index.html for any path that doesn't match a static file (SPA)
+not_found_handling = "single-page-application"
