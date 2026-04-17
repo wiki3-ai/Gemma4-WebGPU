@@ -30,6 +30,7 @@ const PROXY_BASE = (() => {
 
 function LandingScreen({ modelId, setModelId, onStart, onBack, onClearCache, webgpuOk, loadError, autoStart }) {
   // クラッシュリカバリ: autoStart=true のとき mount 直後に自動でロード開始
+  // (Crash recovery: auto-start loading when autoStart=true on mount)
   useEffect(() => {
     if (autoStart) onStart();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -123,6 +124,7 @@ export default function App() {
   const [screen, setScreen] = useState(SCREEN.SOURCE);
   const [modelId, setModelId] = useState(() => {
     // クラッシュ後のリロード: sessionStorage に保存されたモデルIDで自動復帰
+    // (Crash recovery: restore saved model ID from sessionStorage on reload)
     return sessionStorage.getItem(CRASH_KEY) || MODEL_OPTIONS[1].id;
   });
   const [webgpuOk, setWebgpuOk] = useState(true);
@@ -145,7 +147,7 @@ export default function App() {
 
   const workerRef = useRef(null);
   const pendingRef = useRef(null); // { resolve, reject }
-  const videoTypeRef = useRef("blank"); // クラッシュ時の動画ソース記録用
+  const videoTypeRef = useRef("blank"); // クラッシュ時の動画ソース記録用 (track video source for crash recovery)
 
   const {
     videoRef,
@@ -183,6 +185,7 @@ export default function App() {
         case "error":
           console.error("[Worker error]", data);
           // WebGPU 致命エラー（OOM・バッファ破損・OrtRun失敗）→ クラッシュ記録してリロード
+          // (WebGPU fatal error (OOM, buffer corruption, OrtRun failure) → record crash info and reload)
           if (
             typeof data === "string" && (
               data.includes("memory access") ||
@@ -272,6 +275,7 @@ export default function App() {
   }, []);
 
   // クラッシュリカバリ: sessionStorage にモデルID+動画ソースが残っていれば自動復帰
+  // (Crash recovery: if model ID + video source are saved in sessionStorage, auto-restore)
   useEffect(() => {
     const savedModel = sessionStorage.getItem(CRASH_KEY);
     if (savedModel) {
@@ -279,6 +283,7 @@ export default function App() {
       const savedVideo = sessionStorage.getItem(CRASH_VIDEO_KEY) || "blank";
       sessionStorage.removeItem(CRASH_VIDEO_KEY);
       // 動画ソースを再初期化（fileは復元不可なのでblankにフォールバック）
+      // (Re-initialize video source — file cannot be restored, so fall back to blank)
       if (savedVideo === "webcam") {
         startWebcam().catch(() => startBlank());
         videoTypeRef.current = "webcam";
@@ -295,6 +300,7 @@ export default function App() {
   useEffect(() => {
     if (screen !== SCREEN.CHAT) return;
     // ルートパスは即座に404を返す（検索は実行されない）
+    // (Root path returns 404 immediately — no search is executed)
     fetch(`${PROXY_BASE}/`, { signal: AbortSignal.timeout(2000) })
       .then(() => setSearchAvailable(true))  // 404でも応答があればOK
       .catch(() => setSearchAvailable(false));
@@ -303,6 +309,7 @@ export default function App() {
   async function handleVideoSource(type, fileOrNull) {
     setVideoError(null);
     // fileはserialize不可なのでクラッシュ時はblankとして記録
+    // (File cannot be serialized, so record as "blank" for crash recovery)
     videoTypeRef.current = type === "file" ? "blank" : type;
     try {
       if (type === "webcam") await startWebcam();
@@ -315,7 +322,7 @@ export default function App() {
   }
 
   async function handleLoadModel() {
-    setAutoLoad(false); // リトライ時の再トリガー防止
+    setAutoLoad(false); // リトライ時の再トリガー防止 (prevent re-trigger on retry)
     setProgressItems([]);
     setScreen(SCREEN.LOADING);
 
@@ -368,6 +375,7 @@ export default function App() {
     if (isGenerating || isTranscribing) return;
 
     // ─── 音声パス: モデルで書き起こし → テキストとして生成 ──────────────────
+    // (Audio path: transcribe with model → generate as text)
     if (audio) {
       setMessages((prev) => [...prev, { role: "user", text: "", image, isVoice: true, isTranscribing: true }]);
       setIsTranscribing(true);
@@ -389,7 +397,7 @@ export default function App() {
         return;
       }
 
-      // プレースホルダーを書き起こし結果で置換
+      // プレースホルダーを書き起こし結果で置換 (replace placeholder with transcription result)
       const userMsg = { role: "user", text: transcript, image, isVoice: true };
       const nextMessages = [...messages, userMsg];
       setMessages(nextMessages);
@@ -397,6 +405,7 @@ export default function App() {
       setIsGenerating(true);
 
       // Web検索: 書き起こしテキストに検索結果を注入
+      // (Web search: inject search results into the transcribed text)
       const llmText = await applyWebSearch(transcript);
 
       const history = [];
@@ -424,18 +433,20 @@ export default function App() {
       return;
     }
 
-    // ─── テキストパス ──────────────────────────────────────────────────────
-    // ユーザーメッセージを即座にチャットに表示
+    // ─── テキストパス (Text path) ──────────────────────────────────────────────────────
+    // ユーザーメッセージを即座にチャットに表示 (Show user message in chat immediately)
     const userMsg = { role: "user", text, image, isVoice };
     const nextMessages = [...messages, userMsg];
     setMessages(nextMessages);
 
     // Web検索: ユーザーの表示テキストはそのまま、LLMには検索結果を注入
+    // (Web search: keep user's display text as-is, inject search results for LLM)
     const llmText = await applyWebSearch(text);
 
     setIsGenerating(true);
 
     // Build history for worker: 最後のユーザーメッセージには llmText を使用
+    // (Use llmText for the last user message)
     const history = [];
     for (let i = 0; i < nextMessages.length; i++) {
       const m = nextMessages[i];

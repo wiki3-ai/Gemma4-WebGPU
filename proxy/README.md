@@ -1,3 +1,5 @@
+**[English version (README.en.md)](./README.en.md)**
+
 # MCP Web Search Proxy
 
 `mcp-search-proxy.js` は、AIエージェントやブラウザからWeb検索機能を簡単に利用できるようにするための、スマートな検索プロキシサーバーです。

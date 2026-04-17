@@ -47,6 +47,7 @@
     border-radius: 4px;
   }
   /* pre/code はカスタム CodeBlock コンポーネントが担当するため CSS では最小限に */
+  /* (pre/code are handled by the custom CodeBlock component, so minimal CSS here) */
   .markdown pre { margin: 0; }
   .markdown pre code { background: none; padding: 0; }
   .markdown ul, .markdown ol {

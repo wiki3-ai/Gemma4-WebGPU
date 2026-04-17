@@ -108,6 +108,7 @@ export function useMedia() {
   }, []);
 
   // Float32Array (PCM 16kHz mono) を返す — Gemma 4 audio encoder 用
+  // (Returns Float32Array (PCM 16kHz mono) — for Gemma 4 audio encoder)
   const stopRecording = useCallback(
     () =>
       new Promise((resolve) => {
