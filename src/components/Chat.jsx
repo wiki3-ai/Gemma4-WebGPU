@@ -9,6 +9,7 @@ import "highlight.js/styles/atom-one-dark.css";
 import SystemPromptModal from "./SystemPromptModal";
 
 const FONT_SIZES = ["text-xs", "text-sm", "text-base", "text-lg", "text-xl", "text-2xl"];
+const DEFAULT_HEADER_HEIGHT = 88;
 
 // Mermaid: 動的インポート + 初期化フラグ (dynamic import + initialization flag)
 let mermaidInitialized = false;
@@ -334,7 +335,9 @@ export default function Chat({
   const [showSysModal, setShowSysModal] = useState(false);
   const [crashed, setCrashed] = useState(false);
   const [searchDismissed, setSearchDismissed] = useState(false);
+  const [headerHeight, setHeaderHeight] = useState(0);
 
+  const headerRef = useRef(null);
   const inputRef = useRef(null);
   const chatRef = useRef(null);
   const isComposing = useRef(false);
@@ -348,6 +351,20 @@ export default function Chat({
       chatRef.current.scrollTop = chatRef.current.scrollHeight;
     }
   }, [messages]);
+
+  useEffect(() => {
+    if (!headerRef.current) return;
+    const updateHeaderHeight = () => setHeaderHeight(headerRef.current?.offsetHeight || 0);
+    updateHeaderHeight();
+
+    const observer = new ResizeObserver(updateHeaderHeight);
+    observer.observe(headerRef.current);
+    window.addEventListener("resize", updateHeaderHeight);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", updateHeaderHeight);
+    };
+  }, []);
 
   // Resize textarea
   useEffect(() => {
@@ -437,42 +454,52 @@ export default function Chat({
       onDrop={handleDrop}
     >
       {/* Header */}
-      <header className="absolute inset-x-0 top-0 z-10 flex items-center justify-between px-4 py-3
-        bg-gradient-to-b from-black/60 via-black/30 to-transparent">
-        <div className="flex items-center gap-3">
-          <h1 className="font-semibold text-white text-sm">Gemma 4 {modelLabel}</h1>
-          <span className="text-[10px] text-white/25">
+      <header ref={headerRef} className="absolute inset-x-0 top-0 z-10 px-4 py-2 bg-gradient-to-b from-black/80 via-black/55 to-transparent backdrop-blur-sm">
+        <div className="flex items-center justify-between gap-3 text-xs text-white/40 flex-wrap">
+          <div className="flex items-center gap-3">
+            <a href="https://gemma4.wiki3.cc" className="hover:text-white/70 transition-colors" title="Gemma 4 WebGPU live site">gemma4.wiki3.cc</a>
+            <a href="https://github.com/wiki3-ai/Gemma4-WebGPU" target="_blank" rel="noopener noreferrer" className="hover:text-white/70 transition-colors" title="Source code on GitHub">github.com/wiki3-ai/Gemma4-WebGPU</a>
+          </div>
+          <div className="text-[10px] text-white/25">
             Based on{" "}
             <a href="https://huggingface.co/spaces/webml-community/Gemma-4-WebGPU" target="_blank" rel="noopener noreferrer" className="hover:text-white/50 transition-colors" title="Original HuggingFace Space">HF webml-community/Gemma-4-WebGPU</a>
-          </span>
+          </div>
+          <div className="flex items-center gap-3">
+            <a href="https://wiki3.ai/" target="_blank" rel="noopener noreferrer" className="hover:text-white/70 transition-colors" title="wiki3.ai">wiki3.ai</a>
+            <a href="https://www.linkedin.com/in/jamespaulwhite" target="_blank" rel="noopener noreferrer" className="hover:text-white/70 transition-colors" title="James Paul White on LinkedIn">in/jamespaulwhite</a>
+            <a href="mailto:jim@wiki3.ai" className="hover:text-white/70 transition-colors" title="Email jim@wiki3.ai">jim@wiki3.ai</a>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <button onClick={() => changeFontSize(-1)} className="btn-ctrl" title="Decrease font size">A-</button>
-          <button onClick={() => changeFontSize(1)} className="btn-ctrl" title="Increase font size">A+</button>
-          {onMaxNewTokensChange && (
-            <input
-              type="number"
-              value={maxNewTokens}
-              min={64}
-              max={4096}
-              onChange={(e) => onMaxNewTokensChange(Math.max(64, Math.min(4096, Number(e.target.value))))}
-              className="w-16 bg-white/5 border border-white/10 rounded-lg px-2 py-1 text-xs text-white/50 text-center outline-none focus:border-white/20"
-              title="Max new tokens (64–4096)"
-            />
-          )}
-          <button onClick={() => setShowSysModal(true)} className="btn-ctrl" title="System prompt settings">⚙</button>
-          <button onClick={onToggleBg} className={`btn-ctrl ${bgVisible ? "text-white/60" : "text-white/20"}`} title={bgVisible ? "Hide video background" : "Show video background"}>BG</button>
-          <button onClick={onReset} className="btn-ctrl" title="Clear chat history">
-            <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-              <polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14H6L5 6" /><path d="M10 11v6M14 11v6" />
-            </svg>
-          </button>
+        <div className="mt-2 flex items-center justify-between gap-3">
+          <h1 className="font-semibold text-white text-sm">Gemma 4 {modelLabel}</h1>
+          <div className="flex items-center gap-2">
+            <button onClick={() => changeFontSize(-1)} className="btn-ctrl" title="Decrease font size">A-</button>
+            <button onClick={() => changeFontSize(1)} className="btn-ctrl" title="Increase font size">A+</button>
+            {onMaxNewTokensChange && (
+              <input
+                type="number"
+                value={maxNewTokens}
+                min={64}
+                max={4096}
+                onChange={(e) => onMaxNewTokensChange(Math.max(64, Math.min(4096, Number(e.target.value))))}
+                className="w-16 bg-white/5 border border-white/10 rounded-lg px-2 py-1 text-xs text-white/50 text-center outline-none focus:border-white/20"
+                title="Max new tokens (64–4096)"
+              />
+            )}
+            <button onClick={() => setShowSysModal(true)} className="btn-ctrl" title="System prompt settings">⚙</button>
+            <button onClick={onToggleBg} className={`btn-ctrl ${bgVisible ? "text-white/60" : "text-white/20"}`} title={bgVisible ? "Hide video background" : "Show video background"}>BG</button>
+            <button onClick={onReset} className="btn-ctrl" title="Clear chat history">
+              <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                <polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14H6L5 6" /><path d="M10 11v6M14 11v6" />
+              </svg>
+            </button>
+          </div>
         </div>
       </header>
 
       {/* Recording indicator */}
       {isRecording && (
-        <div className="absolute top-14 inset-x-0 z-10 flex justify-center">
+        <div className="absolute inset-x-0 z-10 flex justify-center" style={{ top: `${(headerHeight || DEFAULT_HEADER_HEIGHT) + 8}px` }}>
           <span className="flex items-center gap-1.5 text-xs text-red-400 bg-black/40 rounded-full px-3 py-1">
             <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
             Recording...
@@ -482,7 +509,7 @@ export default function Chat({
 
       {/* Searching indicator */}
       {isSearching && (
-        <div className="absolute top-14 inset-x-0 z-10 flex justify-center">
+        <div className="absolute inset-x-0 z-10 flex justify-center" style={{ top: `${(headerHeight || DEFAULT_HEADER_HEIGHT) + 8}px` }}>
           <span className="flex items-center gap-1.5 text-xs text-blue-400 bg-black/40 rounded-full px-3 py-1">
             <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="animate-spin">
               <circle cx={12} cy={12} r={10} strokeDasharray="32" strokeDashoffset="10" />
@@ -493,7 +520,7 @@ export default function Chat({
       )}
 
       {/* Messages */}
-      <div ref={chatRef} className={`flex-1 overflow-y-auto px-4 pt-16 pb-4 space-y-4 ${fontSize}`}>
+      <div ref={chatRef} className={`flex-1 overflow-y-auto px-4 pb-4 space-y-4 ${fontSize}`} style={{ paddingTop: `${(headerHeight || DEFAULT_HEADER_HEIGHT) + 16}px` }}>
         {messages.map((msg, i) => (
           <MessageBubble key={i} msg={msg} fontSize={fontSize} />
         ))}
